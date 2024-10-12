@@ -11,13 +11,13 @@ if 'quiz_status' not in st.session_state:
 # Signup form for first and last name
 st.title("💡 Financial Literacy App")
 
-with st.form("signup_form"):
-    first_name = st.text_input("First Name")
-    last_name = st.text_input("Last Name")
-    submitted = st.form_submit_button("Sign Up")
+# with st.form("signup_form"):
+#     first_name = st.text_input("First Name")
+#     last_name = st.text_input("Last Name")
+#     submitted = st.form_submit_button("Sign Up")
 
-    if submitted:
-        st.write(f"Welcome, {first_name} {last_name}!")
+#     if submitted:
+#         st.write(f"Welcome, {first_name} {last_name}!")
 
 # Display streak and points collected
 st.metric(label="🔥 Streak Count", value=st.session_state.streak)
