@@ -1,7 +1,7 @@
 // testProgress.js
 
 import { updateQuizProgress, saveQuizResults } from './quizData.js';
-import { getUserProgressSummary } from './userProgress.js';
+import { getUserProgress } from './userProgress.js';
 
 // Simulated user ID
 const userId = "user123";  // Replace with actual user ID
@@ -28,7 +28,7 @@ async function simulateQuiz() {
   await saveQuizResults(userId, quizResults);
 
   // Get the user's progress summary
-  const summary = await getUserProgressSummary(userId);
+  const summary = await getUserProgress(userId);
   console.log("Final User Progress Summary:", summary);
 }
 

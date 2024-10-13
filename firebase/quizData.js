@@ -10,7 +10,9 @@ export async function saveQuizResults(userId, quizResults) {
       ...quizResults,
       timestamp: new Date(),
     });
+    await updateUserProgressAfterQuiz(userId, quizResults);
     console.log('Quiz results saved for user:', userId);
+
   } catch (error) {
     console.error('Error saving quiz results:', error.message);
   }
@@ -53,4 +55,38 @@ export async function updateQuizProgress(userId, isCorrect, difficulty, timeTake
   });
 
   console.log('User progress updated after answering question:', userId);
+}
+
+// Update user progress after a quiz is completed
+export async function updateUserProgressAfterQuiz(userId, quizResults) {
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+
+  let quizzesTaken = 1;
+  let totalScore = quizResults.score;
+  let avgScore = quizResults.score;
+
+  // Check if the document exists; if not, create it with initial values
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      quizzesTaken: quizzesTaken,
+      totalScore: totalScore,
+      avgScore: avgScore
+    });
+    console.log(`Created new document for user: ${userId}`);
+  } else {
+    // If the document exists, update the existing progress
+    const userData = userSnap.data();
+    quizzesTaken = userData.quizzesTaken ? userData.quizzesTaken + 1 : 1;
+    totalScore = userData.totalScore ? userData.totalScore + quizResults.score : quizResults.score;
+    avgScore = totalScore / quizzesTaken;
+
+    // Update the user's progress in Firestore
+    await updateDoc(userRef, {
+      quizzesTaken: quizzesTaken,
+      totalScore: totalScore,
+      avgScore: avgScore,
+    });
+    console.log('User progress updated after quiz completion:', userId);
+  }
 }

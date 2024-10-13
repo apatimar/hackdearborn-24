@@ -1,19 +1,20 @@
 // userProgress.js
 
 import { db } from './firebase.js';
-import { doc, getDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 
-// Get user's progress summary (after quiz ends)
-export async function getUserProgressSummary(userId) {
+// Retrieve User Progress (quiz data)
+
+export async function getUserProgress(userId) {
   const userRef = doc(db, "users", userId);
   const userSnap = await getDoc(userRef);
 
   if (userSnap.exists()) {
     const userData = userSnap.data();
-    console.log('User progress summary:', userData);
+    console.log('User Progress:', userData);
     return userData;
   } else {
-    console.log('No such user');
+    console.log('No user data found.');
     return null;
   }
 }
