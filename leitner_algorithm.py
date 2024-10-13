@@ -1,4 +1,7 @@
-{
+import streamlit as st
+import random
+
+data = {
   "questions": [
     {
       "id": "1",
@@ -483,4 +486,56 @@
   ]
 }
 
+import streamlit as st
+import random
 
+# Define questions with categories and difficulty levels
+# Session state to track user's progress
+if 'current_difficulty' not in st.session_state:
+    st.session_state.current_difficulty = 'Easy'
+if 'correct_answers' not in st.session_state:
+    st.session_state.correct_answers = 0
+if 'incorrect_answers' not in st.session_state:
+    st.session_state.incorrect_answers = 0
+
+# Function to adjust difficulty based on previous answer
+def adjust_difficulty(correct):
+    if correct:
+        if st.session_state.current_difficulty == 'Easy':
+            st.session_state.current_difficulty = 'Medium'
+        elif st.session_state.current_difficulty == 'Medium':
+            st.session_state.current_difficulty = 'Hard'
+    else:
+        if st.session_state.current_difficulty == 'Hard':
+            st.session_state.current_difficulty = 'Medium'
+        elif st.session_state.current_difficulty == 'Medium':
+            st.session_state.current_difficulty = 'Easy'
+
+# Function to get a random question based on the current difficulty level
+def get_question_by_difficulty(difficulty):
+    questions = [q for q in data["questions"] if q["difficulty"] == difficulty]
+    return random.choice(questions) if questions else None
+
+# Get the current question based on the adaptive difficulty level
+question = get_question_by_difficulty(st.session_state.current_difficulty)
+
+if question:
+    st.write(f"**{question['text']}**")
+    user_answer = st.radio("Select your answer:", question["options"])
+
+    submit = st.button("Submit")
+
+    if submit:
+        if user_answer == question['correct_answer']:
+            st.success("Correct!")
+            st.session_state.correct_answers += 1
+            adjust_difficulty(True)  # Increase difficulty for correct answer
+        else:
+            st.error("Wrong answer.")
+            st.session_state.incorrect_answers += 1
+            adjust_difficulty(False)  # Decrease difficulty for incorrect answer
+
+        st.write(f"Your correct answers: {st.session_state.correct_answers}")
+        st.write(f"Your incorrect answers: {st.session_state.incorrect_answers}")
+else:
+    st.write("No more questions available.")
