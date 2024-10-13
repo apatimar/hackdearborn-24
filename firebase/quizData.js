@@ -2,6 +2,7 @@
 
 import { db } from './firebase.js';
 import { doc, setDoc, updateDoc, increment, getDoc } from "firebase/firestore";
+import { updateStreak } from './userProgress.js';
 
 // Update progress after each question, with category tracking
 
@@ -9,7 +10,7 @@ export async function updateQuizProgress(userId, category, isCorrect, difficulty
   const userRef = doc(db, "users", userId);
   const userSnap = await getDoc(userRef);
 
-  // If the user document doesn't exist, create it with the categories field
+  // If the user document doesn't exist, create it with the categories and streak field
   if (!userSnap.exists()) {
     await setDoc(userRef, {
       categories: {
@@ -21,9 +22,21 @@ export async function updateQuizProgress(userId, category, isCorrect, difficulty
           correctAnswers_medium: 0,
           correctAnswers_hard: 0
         }
-      }
+      },
+      streak: 0,  // Initialize streak
+      lastQuizDate: null  // Initialize lastQuizDate
     });
-    console.log(`Created new user document for user: ${userId}`);
+    console.log(`Created new user document with streak initialization for user: ${userId}`);
+  } else {
+    const userData = userSnap.data();
+    // Check if streak exists, if not initialize it
+    if (!userData.streak) {
+      await updateDoc(userRef, {
+        streak: 0,  // Initialize streak
+        lastQuizDate: null  // Initialize lastQuizDate
+      });
+      console.log('Initialized streak for existing user');
+    }
   }
 
   // Fetch the current user data and initialize categories if needed
@@ -68,6 +81,35 @@ export async function updateQuizProgress(userId, category, isCorrect, difficulty
 // Save Quiz Results (end of quiz) and update category-specific progress
 
 export async function saveQuizResults(userId, category, quizResults) {
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+
+  if (!userSnap.exists()) {
+    // Initialize user data with streak and lastQuizDate
+    await setDoc(userRef, {
+      streak: 0,  // Initialize streak
+      lastQuizDate: null,  // No quiz completed yet
+      categories: {
+        [category]: {
+          quizzesTaken: 0,
+          totalScore: 0,
+          avgScore: 0
+        }
+      }
+    });
+    console.log('Created new user document with streak initialization');
+  } else {
+    const userData = userSnap.data();
+    // Check if streak exists, if not initialize it
+    if (!userData.streak) {
+      await updateDoc(userRef, {
+        streak: 0,  // Initialize streak
+        lastQuizDate: null  // Initialize lastQuizDate
+      });
+      console.log('Initialized streak for existing user');
+    }
+  }
+
   try {
     // Save the quiz results in a subcollection, tagged with category
     await setDoc(doc(db, "users", userId, "quizzes", `quiz-${Date.now()}`), {
@@ -79,11 +121,15 @@ export async function saveQuizResults(userId, category, quizResults) {
     // After saving quiz results, update overall user progress for the category
     await updateUserProgressAfterQuiz(userId, category, quizResults);
 
+    // After saving quiz results, update the user's streak
+    await updateStreak(userId);
+
     console.log('Quiz results and progress saved for user:', userId);
   } catch (error) {
     console.error('Error saving quiz results:', error.message);
   }
 }
+
 
 
 // Update user progress after a quiz is completed for a specific category
