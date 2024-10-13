@@ -1,0 +1,14 @@
+{
+  "name": "hackdearborn",
+  "version": "1.0.0",
+  "description": "",
+  "main": "firebase.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "firebase": "^10.14.1",
+    "openai": "^4.67.3"
+  }
+}
