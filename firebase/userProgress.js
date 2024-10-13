@@ -18,3 +18,24 @@ export async function getUserProgress(userId) {
     return null;
   }
 }
+
+// Retrieve User Progress for a specific category
+
+export async function getUserProgressByCategory(userId, category) {
+  const userRef = doc(db, "users", userId);
+  const userSnap = await getDoc(userRef);
+
+  if (userSnap.exists()) {
+    const userData = userSnap.data();
+    const categoryData = userData.categories ? userData.categories[category] : null;
+    if (categoryData) {
+      return categoryData;
+    } else {
+      console.log(`No progress found for category "${category}"`);
+      return null;
+    }
+  } else {
+    console.log('No user data found.');
+    return null;
+  }
+}
